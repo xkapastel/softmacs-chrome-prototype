@@ -1,0 +1,18 @@
+{
+  "name": "softmacs",
+  "version": "0.0.0",
+  "description": "A Lisp runtime.",
+  "main": "softmacs",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.org/xkapastel/softmacs"
+  },
+  "author": "Matthew Blount <xkapastel@gmail.com>",
+  "license": "AGPL-3.0"
+}
