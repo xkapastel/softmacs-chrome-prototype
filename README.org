@@ -1,1 +1,1 @@
-Softmacs is a Lisp runtime.
+Softmacs is a Lisp runtime for Linux and Chrome OS.
