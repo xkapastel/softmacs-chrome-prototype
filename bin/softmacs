@@ -1,0 +1,4 @@
+#!/bin/bash
+
+SOFTMACS_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+node --experimental-modules $SOFTMACS_HOME/node/index.mjs

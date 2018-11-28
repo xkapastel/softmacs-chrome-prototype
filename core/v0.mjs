@@ -15,7 +15,7 @@
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/.
 
-import * as lisp from "./lisp.mjs";
+import * as core from "./index.mjs";
 
 class Value {
   constructor() {
@@ -56,7 +56,7 @@ class Scope extends Value {
     if (isSymbol(key)) {
       key = key.value;
     }
-    lisp.guard(isString, key);
+    core.guard(isString, key);
     if (this.frame.has(key)) {
       return this.frame.get(key);
     }
@@ -73,7 +73,7 @@ class Scope extends Value {
     if (isSymbol(key)) {
       key = key.value;
     }
-    lisp.guard(isString, key);
+    core.guard(isString, key);
     this.frame.set(key, value);
   }
 
@@ -85,7 +85,7 @@ class Scope extends Value {
       return this.set(fst, snd);
     }
     if (isPair(fst)) {
-      lisp.guard(isPair, snd);
+      core.guard(isPair, snd);
       this.bind(fst.fst, snd.fst);
       this.bind(fst.snd, snd.snd);
     }
@@ -164,7 +164,7 @@ function isProcedure(value) {
   return isPrimitive(value) || isApplicative(value) || isOperative(value);
 }
 
-class V0 extends lisp.Lisp {
+class V0 extends core.Lisp {
   constructor() {
     super();
     this.kUnit = new Unit();
@@ -194,27 +194,27 @@ class V0 extends lisp.Lisp {
   }
 
   fst(value) {
-    lisp.guard(isPair, value);
+    core.guard(isPair, value);
     return value.fst;
   }
 
   snd(value) {
-    lisp.guard(isPair, value);
+    core.guard(isPair, value);
     return value.snd;
   }
 
   primitive(func) {
-    lisp.guard(isFunction, func);
+    core.guard(isFunction, func);
     return new Primitive(func);
   }
 
   wrap(proc) {
-    lisp.guard(isProcedure, proc);
+    core.guard(isProcedure, proc);
     return new Applicative(proc);
   }
 
   unwrap(proc) {
-    lisp.guard(isApplicative, proc);
+    core.guard(isApplicative, proc);
     return proc.body;
   }
 
@@ -236,8 +236,8 @@ class V0 extends lisp.Lisp {
     scope.set("eval", this._app2(this.eval.bind(this)));
     scope.set("show", this._app1(this.show.bind(this)));
     scope.set("vau", this.primitive((args, scope, rest) => {
-      lisp.guard(isPair, args);
-      lisp.guard(isPair, args.snd);
+      core.guard(isPair, args);
+      core.guard(isPair, args.snd);
       let proc = this.vau(args.fst, args.snd.snd, scope, args.snd.fst);
       return rest(proc);
     }));
@@ -271,7 +271,7 @@ class V0 extends lisp.Lisp {
       if (value.isList) {
         let buf = [];
         while (!isUnit(value)) {
-          lisp.guard(isPair, value);
+          core.guard(isPair, value);
           const fst = this.show(value.fst);
           buf.push(fst);
           value = value.snd;
@@ -317,7 +317,7 @@ class V0 extends lisp.Lisp {
   }
 
   _apply(proc, value, scope, rest) {
-    lisp.guard(isProcedure, proc);
+    core.guard(isProcedure, proc);
     if (isPrimitive(proc)) {
       return proc.body(value, scope, rest);
     } else if (isApplicative(proc)) {
@@ -365,17 +365,17 @@ class V0 extends lisp.Lisp {
 
   _app1(body) {
     return this.wrap(this.primitive((args, scope, rest) => {
-      lisp.guard(isPair, args);
-      lisp.guard(isUnit, args.snd);
+      core.guard(isPair, args);
+      core.guard(isUnit, args.snd);
       return rest(body(args.fst));
     }));
   }
 
   _app2(body) {
     return this.wrap(this.primitive((args, scope, rest) => {
-      lisp.guard(isPair, args);
-      lisp.guard(isPair, args.snd);
-      lisp.guard(isUnit, args.snd.snd);
+      core.guard(isPair, args);
+      core.guard(isPair, args.snd);
+      core.guard(isUnit, args.snd.snd);
       return rest(body(args.fst, args.snd.fst));
     }));
   }
@@ -486,7 +486,7 @@ function _parse(tokens, api) {
       index++;
       break;
     case "rparen":
-      lisp.guard((x) => x.length > 0, stack);
+      core.guard((x) => x.length > 0, stack);
       if (objects.length > 2) {
         const last = objects.length - 1;
         if (isPsuedo(objects[last-1])) {
@@ -500,7 +500,7 @@ function _parse(tokens, api) {
       let xs;
       while (objects.length > 0) {
         let object = objects.pop();
-        lisp.guard((x) => !isPsuedo(x), object);
+        core.guard((x) => !isPsuedo(x), object);
         if (xs === undefined) {
           xs = object;
         } else {
@@ -553,7 +553,7 @@ function _parse(tokens, api) {
 function arrayFromList(xs) {
   let buf = [];
   while (!isUnit(xs)) {
-    lisp.guard(isPair, xs);
+    core.guard(isPair, xs);
     buf.push(xs.fst);
     xs = xs.snd;
   }

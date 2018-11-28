@@ -15,8 +15,8 @@
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/.
 
-import * as lisp from "./lisp";
-import * as v0 from "./v0";
+// import * as core from "../core/index.mjs";
+import * as v0 from "../core/v0.mjs";
 import * as readline from "readline";
 
 function main() {

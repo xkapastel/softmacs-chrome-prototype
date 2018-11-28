@@ -1,3 +1,0 @@
-#!/bin/bash
-
-node --inspect=8080 --experimental-modules lib/main.mjs
