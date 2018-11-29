@@ -27,6 +27,8 @@ class Unit extends Value {
   constructor() {
     super();
   }
+
+  toString() { return "#" }
 }
 
 class Symbol extends Value {
@@ -34,6 +36,8 @@ class Symbol extends Value {
     super();
     this.value = value;
   }
+
+  toString() { return this.value }
 }
 
 class Pair extends Value {
@@ -42,6 +46,25 @@ class Pair extends Value {
     this.fst = fst;
     this.snd = snd;
     this.isList = isList;
+  }
+
+  toString() {
+    if (this.isList) {
+      let buf = [];
+      let value = this;
+      while (!isUnit(value)) {
+        core.guard(isPair, value);
+        const fst = value.fst.toString();
+        buf.push(fst);
+        value = value.snd;
+      }
+      const body = buf.join(" ");
+      return `(${body})`;
+    } else {
+      const fst = this.fst.toString();
+      const snd = this.snd.toString();
+      return `(${fst}} . ${snd})`;
+    }
   }
 }
 
@@ -90,23 +113,33 @@ class Scope extends Value {
       this.bind(fst.snd, snd.snd);
     }
   }
+
+  toString() { return "<scope>" }
 }
 
-class Primitive extends Value {
+class Procedure extends Value {
+  constructor() {
+    super();
+  }
+
+  toString() { return "<procedure>" }
+}
+
+class Primitive extends Procedure {
   constructor(body) {
     super();
     this.body = body;
   }
 }
 
-class Applicative extends Value {
+class Applicative extends Procedure {
   constructor(body) {
     super();
     this.body = body;
   }
 }
 
-class Operative extends Value {
+class Operative extends Procedure {
   constructor(head, tail, lexical, dynamic) {
     super();
     this.head = head;
@@ -161,20 +194,20 @@ function isOperative(value) {
 }
 
 function isProcedure(value) {
-  return isPrimitive(value) || isApplicative(value) || isOperative(value);
+  return value instanceof Procedure;
 }
 
 class V0 extends core.Lisp {
   constructor() {
     super();
-    this.kUnit = new Unit();
+    this.kUnit  = new Unit();
   }
 
   get version() { return "0.0.0 stealth mode" }
   
   get unit() { return this.kUnit }
   
-  get t() { return true }
+  get t() { return true  }
   get f() { return false }
 
   symbol(value) { return new Symbol(value) }
@@ -255,40 +288,16 @@ class V0 extends core.Lisp {
   }
 
   show(value) {
-    if (isUnit(value)) {
-      return "#";
-    } else if (isBoolean(value)) {
+    if (isBoolean(value)) {
       if (value) {
         return "#t";
       } else {
         return "#f";
       }
-    } else if (isSymbol(value)) {
-      return value.value;
     } else if (isString(value)) {
-      return `"${value}"`;
-    } else if (isPair(value)) {
-      if (value.isList) {
-        let buf = [];
-        while (!isUnit(value)) {
-          core.guard(isPair, value);
-          const fst = this.show(value.fst);
-          buf.push(fst);
-          value = value.snd;
-        }
-        return `(${buf.join(" ")})`;
-      } else {
-        const fst = this.show(value.fst);
-        const snd = this.show(value.snd);
-        return `(${fst} . ${snd})`;
-      }
-    } else if (isScope(value)) {
-      return "<scope>";
-    } else if (isProcedure(value)) {
-      return "<procedure>";
+      return `"$value"`;
     } else {
-      debugger;
-      throw "strange thing to show";
+      return value.toString();
     }
   }
 
