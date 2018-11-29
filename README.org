@@ -1,1 +1,7 @@
 Softmacs is a Lisp runtime for Linux and Chrome OS.
+
+* Links
+- [[http://fexpr.blogspot.com/2018/10/lisp-mud-and-wikis.html][Lisp, mud, and wikis]]
+- [[https://arxiv.org/abs/1801.03526][Neural Program Synthesis with Priority Queue Training]]
+- [[https://arxiv.org/abs/1806.05695][Evolving simple programs for playing Atari games]]
+- [[http://devosoft.org/learning-an-evolvable-genotype-phenotype-mapping/][Learning an Evolvable Genotype-Phenotype Mapping]]
