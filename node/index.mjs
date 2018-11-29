@@ -15,11 +15,10 @@
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/.
 
-// import * as core from "../core/index.mjs";
 import * as v0 from "../core/v0.mjs";
 import * as readline from "readline";
 
-function main() {
+function v0main() {
   let ctx = v0.init();
   let env = ctx.init();
   let uid = 0;
@@ -46,4 +45,5 @@ function main() {
   });
 }
 
-main();
+v0main();
+

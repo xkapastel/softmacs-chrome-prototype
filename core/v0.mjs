@@ -15,7 +15,52 @@
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/.
 
-import * as core from "./index.mjs";
+export function stub() {
+  debugger;
+  throw "stub";
+}
+
+export function guard(predicate, value) {
+  if (!predicate(value)) {
+    debugger;
+    throw "guard";
+  }
+}
+
+export class Lisp {
+  constructor() {
+    //
+  }
+
+  get version()          { stub() }
+  get unit()             { stub() }
+  get t()                { stub() }
+  get f()                { stub() }
+  symbol(value)          { stub() }
+  number(value)          { stub() }
+  string(value)          { stub() }
+  pair(fst, snd)         { stub() }
+  fst(value)             { stub() }
+  snd(value)             { stub() }
+  eval(value, scope)     { stub() }
+  init()                 { stub() }
+  child(scope)           { stub() }
+  set(scope, key, value) { stub() }
+  isUnit(value)          { stub() }
+  isBoolean(value)       { stub() }
+  isSymbol(value)        { stub() }
+  isNumber(value)        { stub() }
+  isString(value)        { stub() }
+  isPair(value)          { stub() }
+  isScope(value)         { stub() }
+  isProcedure(value)     { stub() }
+  isPrimitive(value)     { stub() }
+  isApplicative(value)   { stub() }
+  isOperative(value)     { stub() }
+  read(src)              { stub() }
+  show(value)            { stub() }
+}
+
 
 class Value {
   constructor() {
@@ -53,7 +98,7 @@ class Pair extends Value {
       let buf = [];
       let value = this;
       while (!isUnit(value)) {
-        core.guard(isPair, value);
+        guard(isPair, value);
         const fst = value.fst.toString();
         buf.push(fst);
         value = value.snd;
@@ -79,7 +124,7 @@ class Scope extends Value {
     if (isSymbol(key)) {
       key = key.value;
     }
-    core.guard(isString, key);
+    guard(isString, key);
     if (this.frame.has(key)) {
       return this.frame.get(key);
     }
@@ -96,7 +141,7 @@ class Scope extends Value {
     if (isSymbol(key)) {
       key = key.value;
     }
-    core.guard(isString, key);
+    guard(isString, key);
     this.frame.set(key, value);
   }
 
@@ -108,7 +153,7 @@ class Scope extends Value {
       return this.set(fst, snd);
     }
     if (isPair(fst)) {
-      core.guard(isPair, snd);
+      guard(isPair, snd);
       this.bind(fst.fst, snd.fst);
       this.bind(fst.snd, snd.snd);
     }
@@ -197,7 +242,7 @@ function isProcedure(value) {
   return value instanceof Procedure;
 }
 
-class V0 extends core.Lisp {
+class V0 extends Lisp {
   constructor() {
     super();
     this.kUnit  = new Unit();
@@ -227,27 +272,27 @@ class V0 extends core.Lisp {
   }
 
   fst(value) {
-    core.guard(isPair, value);
+    guard(isPair, value);
     return value.fst;
   }
 
   snd(value) {
-    core.guard(isPair, value);
+    guard(isPair, value);
     return value.snd;
   }
 
   primitive(func) {
-    core.guard(isFunction, func);
+    guard(isFunction, func);
     return new Primitive(func);
   }
 
   wrap(proc) {
-    core.guard(isProcedure, proc);
+    guard(isProcedure, proc);
     return new Applicative(proc);
   }
 
   unwrap(proc) {
-    core.guard(isApplicative, proc);
+    guard(isApplicative, proc);
     return proc.body;
   }
 
@@ -269,8 +314,8 @@ class V0 extends core.Lisp {
     scope.set("eval", this._app2(this.eval.bind(this)));
     scope.set("show", this._app1(this.show.bind(this)));
     scope.set("vau", this.primitive((args, scope, rest) => {
-      core.guard(isPair, args);
-      core.guard(isPair, args.snd);
+      guard(isPair, args);
+      guard(isPair, args.snd);
       let proc = this.vau(args.fst, args.snd.snd, scope, args.snd.fst);
       return rest(proc);
     }));
@@ -326,7 +371,7 @@ class V0 extends core.Lisp {
   }
 
   _apply(proc, value, scope, rest) {
-    core.guard(isProcedure, proc);
+    guard(isProcedure, proc);
     if (isPrimitive(proc)) {
       return proc.body(value, scope, rest);
     } else if (isApplicative(proc)) {
@@ -374,17 +419,17 @@ class V0 extends core.Lisp {
 
   _app1(body) {
     return this.wrap(this.primitive((args, scope, rest) => {
-      core.guard(isPair, args);
-      core.guard(isUnit, args.snd);
+      guard(isPair, args);
+      guard(isUnit, args.snd);
       return rest(body(args.fst));
     }));
   }
 
   _app2(body) {
     return this.wrap(this.primitive((args, scope, rest) => {
-      core.guard(isPair, args);
-      core.guard(isPair, args.snd);
-      core.guard(isUnit, args.snd.snd);
+      guard(isPair, args);
+      guard(isPair, args.snd);
+      guard(isUnit, args.snd.snd);
       return rest(body(args.fst, args.snd.fst));
     }));
   }
@@ -495,7 +540,7 @@ function _parse(tokens, api) {
       index++;
       break;
     case "rparen":
-      core.guard((x) => x.length > 0, stack);
+      guard((x) => x.length > 0, stack);
       if (objects.length > 2) {
         const last = objects.length - 1;
         if (isPsuedo(objects[last-1])) {
@@ -509,7 +554,7 @@ function _parse(tokens, api) {
       let xs;
       while (objects.length > 0) {
         let object = objects.pop();
-        core.guard((x) => !isPsuedo(x), object);
+        guard((x) => !isPsuedo(x), object);
         if (xs === undefined) {
           xs = object;
         } else {
@@ -562,7 +607,7 @@ function _parse(tokens, api) {
 function arrayFromList(xs) {
   let buf = [];
   while (!isUnit(xs)) {
-    core.guard(isPair, xs);
+    guard(isPair, xs);
     buf.push(xs.fst);
     xs = xs.snd;
   }

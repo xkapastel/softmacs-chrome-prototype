@@ -1,4 +1,4 @@
- // This file is a part of Softmacs.
+// This file is a part of Softmacs.
 // Copyright (C) 2018 Matthew Blount
 
 // This program is free software: you can redistribute it and/or modify
@@ -14,3 +14,11 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/.
+
+import * as core from "./index.mjs";
+
+class Image {
+  eval(src) {
+    return "#f";
+  }
+}
