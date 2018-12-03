@@ -33,19 +33,19 @@ export class Lisp {
   }
 
   get version()          { stub() }
+
   get unit()             { stub() }
-  get t()                { stub() }
-  get f()                { stub() }
   symbol(value)          { stub() }
-  number(value)          { stub() }
-  string(value)          { stub() }
   pair(fst, snd)         { stub() }
   fst(value)             { stub() }
   snd(value)             { stub() }
-  eval(value, scope)     { stub() }
   init()                 { stub() }
+  eval(value, scope)     { stub() }
   child(scope)           { stub() }
   set(scope, key, value) { stub() }
+  wrap(value)            { stub() }
+  unwrap(value)          { stub() }
+  vau(h, t, s, d)        { stub() }
   isUnit(value)          { stub() }
   isBoolean(value)       { stub() }
   isSymbol(value)        { stub() }
@@ -249,15 +249,8 @@ class V0 extends Lisp {
   }
 
   get version() { return "0.0.0 stealth mode" }
-  
   get unit() { return this.kUnit }
-  
-  get t() { return true  }
-  get f() { return false }
-
   symbol(value) { return new Symbol(value) }
-  number(value) { return value }
-  string(value) { return value }
 
   pair(fst, snd) {
     let isList = false;
