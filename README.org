@@ -1,5 +1,9 @@
 Softmacs is a Lisp runtime for Linux and Chrome OS.
 
+* Language
+The Lisp fragment is essentially an expressive compile-time for the
+pure fragment.
+
 * Links
 - [[http://fexpr.blogspot.com/2018/10/lisp-mud-and-wikis.html][Lisp, mud, and wikis]]
 - [[https://arxiv.org/abs/1801.03526][Neural Program Synthesis with Priority Queue Training]]

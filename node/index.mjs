@@ -15,7 +15,7 @@
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/.
 
-import * as v0 from "../core/v0.mjs";
+import * as v0 from "../core/index.mjs";
 import * as readline from "readline";
 
 function v0main() {
@@ -40,9 +40,7 @@ function v0main() {
     }
     shell.prompt();
   });
-  shell.on("close", () => {
-    process.exit(0);
-  });
+  shell.on("close", () => process.exit(0));
 }
 
 v0main();
