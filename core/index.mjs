@@ -36,6 +36,7 @@ export class Lisp {
 
   get unit()             { stub() }
   symbol(value)          { stub() }
+  keyword(value)         { stub() }
   pair(fst, snd)         { stub() }
   fst(value)             { stub() }
   snd(value)             { stub() }
@@ -50,6 +51,7 @@ export class Lisp {
   isUnit(value)          { stub() }
   isBoolean(value)       { stub() }
   isSymbol(value)        { stub() }
+  isKeyword(value)       { stub() }
   isNumber(value)        { stub() }
   isString(value)        { stub() }
   isPair(value)          { stub() }
@@ -84,6 +86,15 @@ class Symbol extends Value {
   }
 
   toString() { return this.value }
+}
+
+class Keyword extends Value {
+  constructor(value) {
+    super();
+    this.value = value;
+  }
+
+  toString() { return `:${this.value}` }
 }
 
 class Pair extends Value {
@@ -215,6 +226,10 @@ function isSymbol(value) {
   return value instanceof Symbol;
 }
 
+function isKeyword(value) {
+  return value instanceof Keyword;
+}
+
 function isPair(value) {
   return value instanceof Pair;
 }
@@ -249,9 +264,10 @@ class V0 extends Lisp {
     this.kUnit  = new Unit();
   }
 
-  get version() { return "0.0.0 stealth mode" }
-  get unit() { return this.kUnit }
-  symbol(value) { return new Symbol(value) }
+  get version()  { return "0.0.0 stealth mode" }
+  get unit()     { return this.kUnit           }
+  symbol(value)  { return new Symbol(value)    }
+  keyword(value) { return new Keyword(value)   }
 
   pair(fst, snd) {
     let isList = false;
@@ -343,6 +359,7 @@ class V0 extends Lisp {
   isUnit(value)        { return isUnit(value)        }
   isBoolean(value)     { return isBoolean(value)     }
   isSymbol(value)      { return isSymbol(value)      }
+  isKeyword(value)     { return isKeyword(value)     }
   isNumber(value)      { return isNumber(value)      }
   isString(value)      { return isString(value)      }
   isPair(value)        { return isPair(value)        }
@@ -464,6 +481,10 @@ function isDot(rune) {
   return rune == ".";
 }
 
+function isColon(rune) {
+  return rune == ":";
+}
+
 function _tokenize(runes) {
   let index = 0;
   let tokens = [];
@@ -477,6 +498,9 @@ function _tokenize(runes) {
       index++;
     } else if (isDot(rune)) {
       tokens.push({ type: "dot" });
+      index++;
+    } else if (isColon(rune)) {
+      tokens.push({ type: "colon" });
       index++;
     } else if (isSpace(rune)) {
       const start = index;
@@ -534,7 +558,7 @@ function _parse(tokens, api) {
       index++;
       break;
     case "rparen":
-      guard((x) => x.length > 0, stack);
+      guard(nonempty, stack);
       if (objects.length > 2) {
         const last = objects.length - 1;
         if (isPsuedo(objects[last-1])) {
@@ -562,6 +586,13 @@ function _parse(tokens, api) {
     case "dot":
       let psuedo = new Dot();
       objects.push(psuedo);
+      index++;
+      break;
+    case "colon":
+      index++;
+      let value = tokens[index];
+      guard((x) => x.type == "symbol", value);
+      objects.push(api.keyword(value.value));
       index++;
       break;
     case "space":
