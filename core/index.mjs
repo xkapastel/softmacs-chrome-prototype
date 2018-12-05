@@ -45,7 +45,7 @@ export class Lisp {
   // avoid binding a value in a parameter list, as a return from an
   // effectful function etc.
   get unit() { stub() }
-  // Symbols 
+  // Symbols
   symbol(value) { stub() }
   // Keywords
   keyword(value) { stub() }
@@ -225,52 +225,36 @@ class V0 extends Lisp {
     super();
     this.kUnit = new Unit();
   }
-  get version()          { return "0.0.0 stealth mode"         }
-  get unit()             { return this.kUnit                   }
-  symbol(value)          { return new Symbol(value)            }
-  keyword(value)         { return new Keyword(value)           }
-  child(parent)          { return new Scope(parent)            }
-  set(scope, key, value) { return scope.set(key, value)        }
-  read(src)              { return _parse(_tokenize(src), this) }
-  isUnit(value)          { return isUnit(value)                }
-  isBoolean(value)       { return isBoolean(value)             }
-  isSymbol(value)        { return isSymbol(value)              }
-  isKeyword(value)       { return isKeyword(value)             }
-  isNumber(value)        { return isNumber(value)              }
-  isString(value)        { return isString(value)              }
-  isPair(value)          { return isPair(value)                }
-  isScope(value)         { return isScope(value)               }
-  isProcedure(value)     { return isProcedure(value)           }
-  isPrimitive(value)     { return isPrimitive(value)           }
-  isApplicative(value)   { return isApplicative(value)         }
-  isOperative(value)     { return isOperative(value)           }
-  pair(fst, snd)         { return new Pair(fst, snd)           }
-  fst(value) {
-    guard(isPair, value);
-    return value.fst;
-  }
-  snd(value) {
-    guard(isPair, value);
-    return value.snd;
-  }
-  primitive(func) {
-    guard(isFunction, func);
-    return new Primitive(func);
-  }
-  wrap(proc) {
-    guard(isProcedure, proc);
-    return new Applicative(proc);
-  }
-  unwrap(proc) {
-    guard(isApplicative, proc);
-    return proc.body;
-  }
-  vau(head, tail, lexical, dynamic) {
-    return new Operative(head, tail, lexical, dynamic);
-  }
-  eval(value, scope) {
-    return this._eval(value, scope, (x) => x);
-  }
+  get version()  { return "0.0.0 stealth mode"         }
+  get unit()     { return this.kUnit                   }
+  symbol(value)  { return new Symbol(value)            }
+  keyword(value) { return new Keyword(value)           }
+
+  isUnit(value)        { return isUnit(value)        }
+  isBoolean(value)     { return isBoolean(value)     }
+  isSymbol(value)      { return isSymbol(value)      }
+  isKeyword(value)     { return isKeyword(value)     }
+  isNumber(value)      { return isNumber(value)      }
+  isString(value)      { return isString(value)      }
+  isPair(value)        { return isPair(value)        }
+  isScope(value)       { return isScope(value)       }
+  isProcedure(value)   { return isProcedure(value)   }
+  isPrimitive(value)   { return isPrimitive(value)   }
+  isApplicative(value) { return isApplicative(value) }
+  isOperative(value)   { return isOperative(value)   }
+
+  pair(fst, snd) { return new Pair(fst, snd)          }
+  fst(x)         { guard(isPair, x);     return x.fst }
+  snd(x)         { guard(isPair, x);     return x.snd }
+
+  primitive(x)        { guard(isFunction, x);       return new Primitive(x)   }
+  wrap(x)             { guard(isProcedure, x);      return new Applicative(x) }
+  unwrap(proc)        { guard(isApplicative, proc); return proc.body          }
+  vau(hd, tl, st, dy) { return new Operative(hd, tl, st, dy)                  }
+
+  eval(value, scope)     { return this._eval(value, scope, (x) => x) }
+  child(parent)          { return new Scope(parent)                  }
+  set(scope, key, value) { return scope.set(key, value)              }
   init() {
     let scope = new Scope();
     scope.set("pair"   , this._app2(this.pair.bind(this)));
@@ -288,6 +272,7 @@ class V0 extends Lisp {
     }));
     return scope;
   }
+  read(src) { return _parse(_tokenize(src), this) }
   show(value) {
     if (isBoolean(value)) {
       if (value) {
@@ -374,10 +359,22 @@ class V0 extends Lisp {
     }));
   }
 }
-function isLparen(rune) { return rune == "(" }
-function isRparen(rune) { return rune == ")" }
-function isDot(rune)    { return rune == "." }
-function isColon(rune)  { return rune == ":" }
+function isLparen(rune)   { return rune == "(" }
+function isRparen(rune)   { return rune == ")" }
+function isLbracket(rune) { return rune == "[" }
+function isRbracket(rune) { return rune == "]" }
+function isLbrace(rune)   { return rune == "{" }
+function isRbrace(rune)   { return rune == "}" }
+function isDot(rune)      { return rune == "." }
+function isColon(rune)    { return rune == ":" }
+function isDelimiter(rune) {
+  return (isLparen(rune) ||
+          isRparen(rune) ||
+          isLbracket(rune) ||
+          isRbracket(rune) ||
+          isLbrace(rune) ||
+          isRbrace(rune));
+}
 function isSpace(rune) {
   switch (rune) {
   case " ":
@@ -390,52 +387,40 @@ function isSpace(rune) {
   }
 }
 function isSeparator(rune) {
-  return isLparen(rune) || isRparen(rune) || isSpace(rune);
+  return isDelimiter(rune) || isSpace(rune);
+}
+function slice(runes, index, predicate) {
+  const start = index;
+  index++;
+  while (index < runes.length) {
+    if (predicate(runes[index])) {
+      break;
+    }
+    index++;
+  }
+  const value = runes.substring(start, index);
+  return { value: value, index: index };
 }
 function _tokenize(runes) {
   let index = 0;
   let tokens = [];
   while (index < runes.length) {
     const rune = runes[index];
-    if (isLparen(rune)) {
-      tokens.push({ type: "lparen" });
-      index++;
-    } else if (isRparen(rune)) {
-      tokens.push({ type: "rparen" });
-      index++;
-    } else if (isDot(rune)) {
-      tokens.push({ type: "dot" });
-      index++;
-    } else if (isColon(rune)) {
-      tokens.push({ type: "colon" });
+    if (isDelimiter(rune)) {
+      tokens.push({ type: rune });
       index++;
     } else if (isSpace(rune)) {
-      const start = index;
-      index++;
-      while (index < runes.length) {
-        const rune = runes[index];
-        if (!isSpace(rune)) {
-          break;
-        }
-        index++;
-      }
-      const value = runes.substring(start, index);
-      tokens.push({ type: "space", value: value });
+      let result = slice(runes, index, (x) => !isSpace(x));
+      index = result.index;
+      tokens.push({ type: "space", value: result.value });
     } else {
-      const start = index;
-      index++;
-      while (index < runes.length) {
-        const rune = runes[index];
-        if (isSeparator(rune)) {
-          break;
-        }
-        index++;
-      }
-      const value = runes.substring(start, index);
-      if (value.startsWith("#")) {
-        tokens.push({ type: "sharp", value: value });
+      let result = slice(runes, index, isSeparator);
+      index = result.index;
+      if (result.value.startsWith("#")) {
+        let value = result.value == "#"? "#" : result.value.slice(1);
+        tokens.push({ type: "constant", value: value });
       } else {
-        tokens.push({ type: "symbol", value: value });
+        tokens.push({ type: "symbol", value: result.value });
       }
     }
   }
@@ -453,12 +438,12 @@ function _parse(tokens, api) {
   while (index < tokens.length) {
     const token = tokens[index];
     switch (token.type) {
-    case "lparen":
+    case "(":
       stack.push(objects);
       objects = [];
       index++;
       break;
-    case "rparen":
+    case ")":
       guard(nonempty, stack);
       if (objects.length > 2) {
         const last = objects.length - 1;
@@ -484,12 +469,12 @@ function _parse(tokens, api) {
       objects.push(xs);
       index++;
       break;
-    case "dot":
+    case ".":
       let psuedo = new Dot();
       objects.push(psuedo);
       index++;
       break;
-    case "colon":
+    case ":":
       index++;
       let value = tokens[index];
       guard((x) => x.type == "symbol", value);
@@ -499,7 +484,7 @@ function _parse(tokens, api) {
     case "space":
       index++;
       break;
-    case "sharp":
+    case "constant":
       let object;
       switch (token.value) {
       case "#":
@@ -512,6 +497,7 @@ function _parse(tokens, api) {
         object = false;
         break;
       default:
+        debugger;
         throw "read";
       }
       objects.push(object);
@@ -523,6 +509,7 @@ function _parse(tokens, api) {
       index++;
       break;
     default:
+      debugger;
       throw "read";
       break;
     }
